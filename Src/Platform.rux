@@ -1,0 +1,39 @@
+/*
+    macOS API
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+module MacOS {
+    /// Standard device handles, mirroring the Win32 GetStdHandle constants that
+    /// the Rux macOS Mach-O linker emulates. GetStdHandle maps these to BSD file
+    /// descriptors: Output -> 1, Input -> 0, Error -> 2.
+    enum StdHandle: uint32 {
+        Error = 0xFFFFFFF4,
+        Output = 0xFFFFFFF5,
+        Input = 0xFFFFFFF6
+    }
+
+    // Provided by the Rux macOS Mach-O linker as BSD-syscall compatibility
+    // thunks. The lib name is cosmetic on macOS: the linker resolves these by
+    // symbol name (see MacCompatThunk in the compiler's Linker.cpp), so the
+    // Win32-style names below are backed by real macOS BSD syscalls.
+    @[Import(lib: "rux-macos")]
+    extern {
+        /// Ends the calling process with the given code. Backed by SYS_exit.
+        func ExitProcess(exitCode: uint32);
+
+        /// Returns the file descriptor backing a standard device.
+        func GetStdHandle(stdHandle: StdHandle) -> *opaque;
+
+        /// Writes bytes to a file or device. Backed by SYS_write; returns a
+        /// non-zero value on success and reports the count via bytesWritten.
+        func WriteFile(
+            file: *opaque,
+            buffer: *const opaque,
+            bytesToWrite: uint32,
+            bytesWritten: *uint32,
+            overlapped: *opaque
+        ) -> bool32;
+    }
+}

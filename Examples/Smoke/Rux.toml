@@ -1,0 +1,10 @@
+[Package]
+Name = "MacOSSmoke"
+Version = "0.1.0"
+Type = "bin"
+
+[Build]
+Output = "Bin"
+
+[Dependencies]
+MacOS = { Path = "../.." }
