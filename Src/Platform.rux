@@ -35,5 +35,17 @@ module MacOS {
             bytesWritten: *uint32,
             overlapped: *opaque
         ) -> bool32;
+
+        /// Returns a process heap handle. On macOS this is a fixed token; the
+        /// heap argument to HeapAlloc/HeapFree is ignored.
+        func GetProcessHeap() -> *opaque;
+
+        /// Allocates a memory block. Backed by an anonymous mmap of the
+        /// requested size; the heap and flags arguments are ignored.
+        func HeapAlloc(heap: *opaque, flags: uint32, bytes: uint) -> *opaque;
+
+        /// Frees a memory block. Currently a no-op on macOS (the backing pages
+        /// are not unmapped), so it always reports success.
+        func HeapFree(heap: *opaque, flags: uint32, mem: *opaque) -> bool32;
     }
 }
