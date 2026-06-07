@@ -1,0 +1,22 @@
+/*
+    macOS API
+    Copyright © 2026 Rux Contributors
+    Licensed under the MIT License
+*/
+
+import MacOS::{ GetStdHandle, StdHandle, WriteFile };
+
+// Exercises the macOS bindings end-to-end: a non-zero exit code identifies the
+// step that failed; 0 means stdout was written via the WriteFile thunk.
+func Main() -> int32 {
+    let msg = c8"MacOS smoke: stdout via WriteFile\n";
+    let handle = GetStdHandle(StdHandle::Output);
+    var written: uint32 = 0;
+    if WriteFile(handle, msg.data, msg.length as uint32, &written, null) == 0 {
+        return 1i32;
+    }
+    if written != msg.length as uint32 {
+        return 2i32;
+    }
+    return 0i32;
+}
