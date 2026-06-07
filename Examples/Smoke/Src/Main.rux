@@ -4,11 +4,12 @@
     Licensed under the MIT License
 */
 
-import MacOS::{ GetStdHandle, StdHandle, WriteFile };
+import MacOS::{ GetStdHandle, StdHandle, WriteFile, GetProcessHeap, HeapAlloc, HeapFree };
 
 // Exercises the macOS bindings end-to-end: a non-zero exit code identifies the
-// step that failed; 0 means stdout was written via the WriteFile thunk.
+// step that failed; 0 means every binding behaved as expected.
 func Main() -> int32 {
+    // stdout via WriteFile
     let msg = c8"MacOS smoke: stdout via WriteFile\n";
     let handle = GetStdHandle(StdHandle::Output);
     var written: uint32 = 0;
@@ -18,5 +19,21 @@ func Main() -> int32 {
     if written != msg.length as uint32 {
         return 2i32;
     }
+
+    // heap: allocate, write, read back, free
+    let heap = GetProcessHeap();
+    let buf = HeapAlloc(heap, 0, 32u) as *char8;
+    if buf == null {
+        return 3i32;
+    }
+    *buf = c8'R';
+    *(buf + 1u) = c8'X';
+    if *buf != c8'R' || *(buf + 1u) != c8'X' {
+        return 4i32;
+    }
+    if HeapFree(heap, 0, buf as *opaque) == 0 {
+        return 5i32;
+    }
+
     return 0i32;
 }
