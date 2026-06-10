@@ -4,7 +4,7 @@
     Licensed under the MIT License
 */
 
-import MacOS::{ GetStdHandle, StdHandle, WriteFile, GetProcessHeap, HeapAlloc, HeapFree };
+import MacOS::{ GetStdHandle, StdHandle, WriteFile, ReadFile, GetProcessHeap, HeapAlloc, HeapFree };
 
 // Exercises the macOS bindings end-to-end: a non-zero exit code identifies the
 // step that failed; 0 means every binding behaved as expected.
@@ -33,6 +33,15 @@ func Main() -> int32 {
     }
     if HeapFree(heap, 0, buf as *opaque) == 0 {
         return 5i32;
+    }
+
+    // stdin via ReadFile. A failed call is an error; zero bytes (EOF / no piped
+    // input) is acceptable so the smoke bin still passes when run without stdin.
+    var input: char8[32];
+    var bytesRead: uint32 = 0;
+    let stdin = GetStdHandle(StdHandle::Input);
+    if ReadFile(stdin, input.data, input.length as uint32, &bytesRead, null) == 0 {
+        return 6i32;
     }
 
     return 0i32;

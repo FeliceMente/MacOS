@@ -36,6 +36,16 @@ module MacOS {
             overlapped: *opaque
         ) -> bool32;
 
+        /// Reads bytes from a file or device. Backed by SYS_read; returns a
+        /// non-zero value on success and reports the count via bytesRead.
+        func ReadFile(
+            file: *opaque,
+            buffer: *opaque,
+            bytesToRead: uint32,
+            bytesRead: *uint32,
+            overlapped: *opaque
+        ) -> bool32;
+
         /// Returns a process heap handle. On macOS this is a fixed token; the
         /// heap argument to HeapAlloc/HeapFree is ignored.
         func GetProcessHeap() -> *opaque;
