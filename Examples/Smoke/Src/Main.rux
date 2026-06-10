@@ -4,7 +4,7 @@
     Licensed under the MIT License
 */
 
-import MacOS::{ GetStdHandle, StdHandle, WriteFile, ReadFile, GetProcessHeap, HeapAlloc, HeapFree };
+import MacOS::{ GetStdHandle, StdHandle, WriteFile, ReadFile, GetProcessHeap, HeapAlloc, HeapFree, Munmap };
 
 // Exercises the macOS bindings end-to-end: a non-zero exit code identifies the
 // step that failed; 0 means every binding behaved as expected.
@@ -22,7 +22,7 @@ func Main() -> int32 {
 
     // heap: allocate, write, read back, free
     let heap = GetProcessHeap();
-    let buf = HeapAlloc(heap, 0, 32u) as *char8;
+    let buf = HeapAlloc(heap, 0u32, 32u) as *char8;
     if buf == null {
         return 3i32;
     }
@@ -31,7 +31,7 @@ func Main() -> int32 {
     if *buf != c8'R' || *(buf + 1u) != c8'X' {
         return 4i32;
     }
-    if HeapFree(heap, 0, buf as *opaque) == 0 {
+    if HeapFree(heap, 0u32, buf as *opaque) == 0 {
         return 5i32;
     }
 
@@ -42,6 +42,19 @@ func Main() -> int32 {
     let stdin = GetStdHandle(StdHandle::Input);
     if ReadFile(stdin, input.data, input.length as uint32, &bytesRead, null) == 0 {
         return 6i32;
+    }
+
+    // mmap/munmap roundtrip: allocate a page, write/read, then unmap it.
+    let page = HeapAlloc(heap, 0u32, 4096u) as *char8;
+    if page == null {
+        return 7i32;
+    }
+    *page = c8'M';
+    if *page != c8'M' {
+        return 8i32;
+    }
+    if Munmap(page as *opaque, 4096u) != 0i64 {
+        return 9i32;
     }
 
     return 0i32;

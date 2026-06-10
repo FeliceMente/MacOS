@@ -57,5 +57,10 @@ module MacOS {
         /// Frees a memory block. Currently a no-op on macOS (the backing pages
         /// are not unmapped), so it always reports success.
         func HeapFree(heap: *opaque, flags: uint32, mem: *opaque) -> bool32;
+
+        /// Unmaps a memory region. Backed by SYS_munmap; addr must be the base
+        /// of a prior HeapAlloc mapping and length its full size. Returns 0 on
+        /// success.
+        func Munmap(addr: *opaque, length: uint) -> int64;
     }
 }
